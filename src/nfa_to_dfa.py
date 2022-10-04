@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
     dfa = set_contruction(nfa)
 
-    pprint(nfa.keys())
+    # pprint(nfa.keys())
     # print(nfa.keys())
     # pprint(nfa["transition_function"])
     # pprint(set_e_closure(set(nfa["start_states"]), nfa))
