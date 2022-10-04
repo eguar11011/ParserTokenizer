@@ -1,6 +1,7 @@
 # Conversion from Regex to NFA
 
 from pprint import pprint
+import json 
 
 non_symbols = ["+", "*", ".", "(", ")"]
 
@@ -222,9 +223,13 @@ def polish_regex(regex):
     return regg
 
 
+def out_nfa(nfa):
+    with open("test_nfa.json", 'w') as outjson:
+        outjson.write(json.dumps(nfa, indent = 4))
+
 if __name__ == "__main__":
 
-    reg = "a*a(a+b)*"
+    reg = "(a+b)*abb"
     pr = polish_regex(reg)
     et = make_exp_tree(pr)
     fa = compute_regex(et)
@@ -244,3 +249,6 @@ if __name__ == "__main__":
 
     print("final states")
     pprint(nfa["final_states"])
+    
+    out_nfa(nfa)
+

@@ -46,17 +46,20 @@ def set_contruction(nfa: dict):
     dfa = dict()
     dfa["letters"] = [x for x in nfa["letters"] if x != "$"]
     dfa["transition_function"] = dict()
-
     dfa["states"] = [set_e_closure(set(nfa["start_states"]), nfa)]
     dfa["start_states"] = [set_e_closure(set(nfa["start_states"]), nfa)]
+    dfa["final_states"] = []
+
     unmarked = [set_e_closure(set(nfa["start_states"]), nfa)]
-    pprint(state_set_to_string(dfa["start_states"][0]))
 
     while unmarked:
         A = unmarked.pop()
         for letter in dfa["letters"]:
             U = set_e_closure(move(A, letter, nfa), nfa)
             if U not in dfa["states"]:
+                if U & set(nfa["final_states"]):
+                    dfa["final_states"].append(U)
+
                 dfa["states"].append(U)
                 unmarked.append(U)
             dfa["transition_function"][state_set_to_string(A)] = dfa[
@@ -65,7 +68,8 @@ def set_contruction(nfa: dict):
                 letter,
                 state_set_to_string(U),
             ]
-    pprint(dfa["transition_function"])
+
+    return dfa
 
 
 def state_set_to_string(state_set: set[str]):
@@ -81,9 +85,9 @@ def load_nfa():
 if __name__ == "__main__":
     nfa = load_nfa()
 
-    set_contruction(nfa)
+    dfa = set_contruction(nfa)
 
+    pprint(nfa.keys())
     # print(nfa.keys())
     # pprint(nfa["transition_function"])
-    # pprint(nfa["start_states"])
     # pprint(set_e_closure(set(nfa["start_states"]), nfa))
