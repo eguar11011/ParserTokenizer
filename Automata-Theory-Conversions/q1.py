@@ -274,8 +274,9 @@ def get_power_set(nfa_st):
 if __name__ == "__main__":
     from pprint import pprint
 
-    reg = "a*a(a+b)*"
-    reg = "(a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+x+y+z)(a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+x+y+z)*"
+    reg = "(a+b)*abb"
+    print(reg)
+    #reg = "(a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+x+y+z)(a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+x+y+z)*"
     pr = polish_regex(reg)
     et = make_exp_tree(pr)
     fa = compute_regex(et)
