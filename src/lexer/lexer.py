@@ -3,18 +3,19 @@ from regex_to_nfa import regex_to_nfa
 from nfa_to_dfa import set_construction, consume
 from sys import argv
 
-# if len(argv) < 3:
-#     raise SystemExit("Introduzca el número de argumentos adecuado.")
-
-# tokens_txt: str = argv[1]
-# program_txt: str = argv[2]
-
-tokens_file = "../../input/tokens.txt"
-program_file = "../../input/program.txt"
-dfas = []
 
 
 def main():
+
+    if len(argv) < 3:
+        raise SystemExit("Introduzca el número de argumentos adecuado.")
+
+    tokens_file: str = argv[1]
+    program_file: str = argv[2]
+
+    # tokens_file = "../../input/tokens.txt"
+    # program_file = "../../input/program.txt"
+    dfas = []
 
     # pasa de expresion regular a AFD
     for token_name, regex_token in parse_archivo_tokens(tokens_file):

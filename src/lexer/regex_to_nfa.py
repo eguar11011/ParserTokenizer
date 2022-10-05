@@ -286,6 +286,7 @@ def out_nfa(nfa):
 
 def regex_to_nfa(reg_exp):
     pr = polish_regex(reg_exp)
+    print(pr)
     et = make_exp_tree(pr)
     fa = compute_regex(et)
 
