@@ -26,19 +26,19 @@ def set_e_closure(state_set: set[str], nfa: dict) -> set[str]:
     return e_closure
 
 
-def move(state_set: set[str], letter: str, nfa: dict):
+def move(state_set: set[str], letter: str, nfa: dict) -> tuple[set, set]:
     """
     Calculates the state set that results from moving from a state in 
     `state_set` with a given `letter`.
     """
     move_set = set()
-    move_set_old = set()
     S = set()
+    # move_set_old = set()
 
-    for state in state_set:
-        move_set_old |= {
-            x[1] for x in nfa["transition_function"].get(state, []) if x[0] == letter
-        }
+    # for state in state_set:
+    #     move_set_old |= {
+    #         x[1] for x in nfa["transition_function"].get(state, []) if x[0] == letter
+    #     }
 
     for state in state_set:
         for label, state in nfa["transition_function"].get(state, []):
@@ -49,7 +49,10 @@ def move(state_set: set[str], letter: str, nfa: dict):
     return move_set, S
 
 
-def intersection(inter_a, inter_b):
+def intersection(inter_a, inter_b) -> list[int]:
+    """
+    Calculates the intersection of two intervals.
+    """
     min_inter = min([inter_a, inter_b])
     max_inter = max([inter_a, inter_b])
 
@@ -170,7 +173,8 @@ def consume(string: str, dfa: dict):
 
 
 if __name__ == "__main__":
-    nfa = load_nfa()
+    reg = "[_a-z][_0-9a-z]*"
+    nfa = regex_to_nfa 
 
     dfa = set_contruction(nfa)
 
