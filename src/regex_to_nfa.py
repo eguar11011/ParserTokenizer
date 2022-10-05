@@ -1,8 +1,7 @@
 # Conversion from Regex to NFA
 
-import json
-# from os import wait
-import sys
+from pprint import pprint
+import json 
 
 non_symbols = ["+", "*", ".", "(", ")"]
 
@@ -131,15 +130,12 @@ def arrange_transitions(state, states_done, symbol_table):
                 symbol_table[ns] = sorted(symbol_table.values())[-1] + 1
                 q_state = "Q" + str(symbol_table[ns])
                 nfa["states"].append(q_state)
-            nfa["transition_function"].append(
-                ["Q" + str(symbol_table[state]), symbol, "Q" + str(symbol_table[ns])]
-            )
 
-            nfa["transition_function_dict"]["Q" + str(symbol_table[state])] = (
-                nfa["transition_function_dict"]
-                .get("Q" + str(symbol_table[state]), []) + [(symbol, "Q" + str(symbol_table[ns]))]
-             )
-            # print(nfa["transition_function_dict"].get("Q" + str(symbol_table[state]), []) + [1])
+            nfa["transition_function"]["Q" + str(symbol_table[state])] = nfa[
+                "transition_function"
+            ].get("Q" + str(symbol_table[state]), []) + [
+                (symbol, "Q" + str(symbol_table[ns]))
+            ]
 
         for ns in state.next_state[symbol]:
             arrange_transitions(ns, states_done, symbol_table)
@@ -149,30 +145,12 @@ def notation_to_num(str):
     return int(str[1:])
 
 
-# def final_st_dfs(st):
-#     global nfa
-#     for val in nfa['transition_function']:
-#         if val[0] == st and val[1] == "$" and val[2] not in nfa["final_states"]:
-#             nfa["final_states"].append(val[2])
-#             final_st_dfs(val[2])
-
-
 def final_st_dfs():
     global nfa
     for st in nfa["states"]:
         count = 0
-        for val in nfa["transition_function"]:
-            if val[0] == st and val[2] != st:
-                count += 1
-        if count == 0 and st not in nfa["final_states"]:
-            nfa["final_states"].append(st)
+        count = len([x for x in nfa["transition_function"].get(st, []) if x != st])
 
-        # count = len([x for x in nfa["transition_function_dict"].get(st, [])if x[1] != st])
-        # if count == 0 and st not in nfa["final_states"]:
-        #     nfa["final_states"].append(st)
-        # for key, val in nfa["transition_function_dict"].items():
-        #     if key == st and val[1] != st:
-        #         count += 1
         if count == 0 and st not in nfa["final_states"]:
             nfa["final_states"].append(st)
 
@@ -181,19 +159,13 @@ def arrange_nfa(fa):
     global nfa
     nfa["states"] = []
     nfa["letters"] = []
-    nfa["transition_function"] = []
-    nfa["transition_function_dict"] = {}
+    nfa["transition_function"] = {}
     nfa["start_states"] = []
     nfa["final_states"] = []
-    q_1 = "Q" + str(1)
-    nfa["states"].append(q_1)
+    nfa["states"].append("Q1")
     arrange_transitions(fa[0], [], {fa[0]: 1})
 
-    st_num = [notation_to_num(i) for i in nfa["states"]]
-
     nfa["start_states"].append("Q1")
-    # nfa["final_states"].append("Q" + str(sorted(st_num)[-1]))
-    # final_st_dfs(nfa["final_states"][0])
     final_st_dfs()
 
 
@@ -251,69 +223,37 @@ def polish_regex(regex):
     return regg
 
 
-def load_regex():
-    with open(sys.argv[1], "r") as inpjson:
-        regex = json.loads(inpjson.read())
-    return regex
-
-
-def output_nfa():
-    global nfa
-    with open(sys.argv[2], "w") as outjson:
-        outjson.write(json.dumps(nfa, indent=4))
-
-
-def get_power_set(nfa_st):
-    powerset = [[]]
-    for i in nfa_st:
-        for sub in powerset:
-            powerset = powerset + [list(sub) + [i]]
-    return powerset
-
+def out_nfa(nfa):
+    with open("test_nfa.json", 'w') as outjson:
+        outjson.write(json.dumps(nfa, indent = 4))
 
 if __name__ == "__main__":
-    from pprint import pprint
 
     reg = "(a+b)*abb"
+<<<<<<< HEAD:Automata-Theory-Conversions/q1.py
     print(reg)
     #reg = "(a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+x+y+z)(a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+x+y+z)*"
+=======
+>>>>>>> refs/remotes/origin/main:src/regex_to_nfa.py
     pr = polish_regex(reg)
     et = make_exp_tree(pr)
     fa = compute_regex(et)
-
     arrange_nfa(fa)
-    # output_nfa()
-    print(nfa["states"])
-    pprint(nfa["transition_function_dict"])
 
-    # nfa to dfa
+    print("States")
+    pprint(nfa["states"])
 
-    # dfa["states"] = []
-    # dfa["letters"] = nfa["letters"]
-    # dfa["transition_function"] = []
-    # dfa["transition_function_dict"] = {}
+    print("Alphabet")
+    pprint(nfa["letters"])
 
-    # for state in nfa["states"]:
-    #     nfa_states.append(state)
+    print("Transition function")
+    pprint(nfa["transition_function"])
+
+    print("start states")
+    pprint(nfa["start_states"])
+
+    print("final states")
+    pprint(nfa["final_states"])
     
-    # dfa_states = get_power_set(nfa_states)
-    
-    # dfa["states"] = []
-    # for states in dfa_states:
-    #     temp = []
-    #     for state in states:
-    #         temp.append(state)
-    #     dfa["states"].append(temp)
+    out_nfa(nfa)
 
-    
-    # for states in dfa_states:
-    #     for letter in nfa["letters"]:
-    #         q_to = []
-    #         for s
-
-    # pprint(nfa["states"])
-    # pprint(nfa["letters"])
-    # pprint(nfa["transition_function"])
-    # pprint(nfa["transition_function_dict"])
-    # pprint(nfa["start_states"])
-    # pprint(nfa["final_states"])

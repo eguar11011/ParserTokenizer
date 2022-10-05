@@ -1,7 +1,7 @@
 from typing import Tuple
-from automata.regex_to_postfix import parse_clases_chars, regex_to_postfix, add_concat_symbol
-from automata.regex_to_nfa import regex_to_nfa
-from automata.nfa_to_dfa import nfa_to_dfa
+# from automata.regex_to_postfix import parse_clases_chars, regex_to_postfix, add_concat_symbol
+# from automata.regex_to_nfa import regex_to_nfa
+# from automata.nfa_to_dfa import nfa_to_dfa
 
 
 # from sys import argv
@@ -12,16 +12,15 @@ from automata.nfa_to_dfa import nfa_to_dfa
 # tokens_txt: str = argv[1]
 # program_txt: str = argv[2]
 
-archivo_tokens = "tokens.txt"
-archivo_programa = "program.txt"
+archivo_tokens = "../input/tokens.txt"
+archivo_programa = "../input/program.txt"
 dfas = []
 
 
 def main():
 
     # pasa de expresion regular a AFD
-    for nombre_token, regex_token in parse_archivo_tokens(archivo_tokens)[2:3]:
-        regex_token = parse_clases_chars(regex_token)
+    for nombre_token, regex_token in parse_archivo_tokens(archivo_tokens):
         print(regex_token)
         # regex_token = regex_to_postfix(regex_token)
         # nfa = regex_to_nfa(regex_token)
