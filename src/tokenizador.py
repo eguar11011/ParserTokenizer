@@ -1,7 +1,6 @@
 from typing import Tuple
-# from automata.regex_to_postfix import parse_clases_chars, regex_to_postfix, add_concat_symbol
-# from automata.regex_to_nfa import regex_to_nfa
-# from automata.nfa_to_dfa import nfa_to_dfa
+from regex_to_nfa import regex_to_nfa
+from nfa_to_dfa import set_contruction, consume
 
 
 # from sys import argv
@@ -20,41 +19,34 @@ dfas = []
 def main():
 
     # pasa de expresion regular a AFD
-    for nombre_token, regex_token in parse_archivo_tokens(archivo_tokens):
-        print(regex_token)
-        # regex_token = regex_to_postfix(regex_token)
-        # nfa = regex_to_nfa(regex_token)
-        # dfa = nfa_to_dfa(nfa)
-        # dfa["token"] = nombre_token
-        # dfas.append(dfa)
-
+    for token_name, regex_token in parse_archivo_tokens(archivo_tokens):
+        nfa = regex_to_nfa(regex_token)
+        dfa = set_contruction(nfa)
+        dfa["token_name"] = token_name
+        dfas.append(dfa)
 
     # tokenización
-    # with open(archivo_programa, mode="r") as texto:
-    #     buffer = texto.read()
-    #     for dfa in dfas:
-    #         nombre_token, pos_match_mas_largo = "", 0
-    #         posible_match_mas_largo = consumir(buffer, dfa)
+    with open(archivo_programa, mode="r") as texto:
+        buffer = texto.read().strip()
+        print(buffer, end="\n")
 
-    #         if posible_match_mas_largo > pos_match_mas_largo:
-    #             pos_match_mas_largo = posible_match_mas_largo
-    #             nombre_token = dfa["token"]
+        start_pos = 1
+        while buffer:
+            token_name, longest_match = "", 0
+            for dfa in dfas:
+                possible_longest_match = consume(buffer, dfa)
 
+                if possible_longest_match > longest_match:
+                    longest_match = possible_longest_match
+                    token_name = dfa["token_name"]
+            final_pos = start_pos + longest_match - 1
+            value = buffer[:longest_match]
+            print(
+                f'Tipo de token: {token_name} - Posición inicial: {start_pos} - Posición final: {final_pos} - Valor: "{value}"'
+            )
 
-def consumir(input, dfa):
-    """
-    Consume la cadena `buffer` con el AFD `dfa` y retorna la posición en la cadena
-    del match mas largo.
-    """
-    pos_match = 0
-
-    current_state = dfa["initial_state"]
-    for char, pos in enumerate(input):
-        current_state = dfa["transition_function"][current_state][char]
-        if current_state in dfa["final_states"]:
-            pos_match = pos + 1
-
-    return pos_match
+            start_pos = final_pos + 1
+            buffer = buffer[longest_match:]
 
 
 def parse_archivo_tokens(nombre_archivo: str) -> list[Tuple[str, str]]:
@@ -74,6 +66,7 @@ def parse_archivo_tokens(nombre_archivo: str) -> list[Tuple[str, str]]:
                 tokens.append((nombre_token, regex_token))
 
     return tokens
+
 
 if __name__ == "__main__":
     main()

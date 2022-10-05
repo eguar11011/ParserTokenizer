@@ -2,12 +2,12 @@
 
 from pprint import pprint
 from string import ascii_lowercase, ascii_uppercase
-import json 
+import json
 
 non_symbols = ["|", "*", ".", "(", ")"]
 
-nfa = {}
-dfa = {}
+# nfa = {}
+# dfa = {}
 nfa_states = []
 dfa_states = []
 
@@ -115,8 +115,7 @@ def do_kleene_star(exp_t):
     return start, end
 
 
-def arrange_transitions(state, states_done, symbol_table):
-    global nfa
+def arrange_transitions(state, states_done, symbol_table, nfa):
 
     if state in states_done:
         return
@@ -139,15 +138,14 @@ def arrange_transitions(state, states_done, symbol_table):
             ]
 
         for ns in state.next_state[symbol]:
-            arrange_transitions(ns, states_done, symbol_table)
+            arrange_transitions(ns, states_done, symbol_table, nfa)
 
 
 def notation_to_num(str):
     return int(str[1:])
 
 
-def final_st_dfs():
-    global nfa
+def final_st_dfs(nfa):
     for st in nfa["states"]:
         count = 0
         count = len([x for x in nfa["transition_function"].get(st, []) if x != st])
@@ -157,39 +155,51 @@ def final_st_dfs():
 
 
 def arrange_nfa(fa):
-    global nfa
+    nfa = dict()
     nfa["states"] = []
     nfa["letters"] = []
     nfa["transition_function"] = {}
     nfa["start_states"] = []
     nfa["final_states"] = []
     nfa["states"].append("Q1")
-    arrange_transitions(fa[0], [], {fa[0]: 1})
+    arrange_transitions(fa[0], [], {fa[0]: 1}, nfa)
 
     nfa["start_states"].append("Q1")
-    final_st_dfs()
+    final_st_dfs(nfa)
+    return nfa
 
 
 def add_concat(regex):
-    global non_symbols
-    l = len(regex)
-    res = []
-    for i in range(l - 1):
-        res.append(regex[i])
-        if regex[i] not in non_symbols:
-            if regex[i + 1] not in non_symbols or regex[i + 1] == "(":
-                res += "."
-        if regex[i] == ")" and regex[i + 1] == "(":
-            res += "."
-        if regex[i] == "*" and regex[i + 1] == "(":
-            res += "."
-        if regex[i] == "*" and regex[i + 1] not in non_symbols:
-            res += "."
-        if regex[i] == ")" and regex[i + 1] not in non_symbols:
-            res += "."
+    non_symbols = ["|", "*", ".", "(", ")"]
+    # l = len(regex)
+    # res = []
+    # for i in range(l - 1):
+    #     res.append(regex[i])
+    #     if regex[i] not in non_symbols:
+    #         if regex[i + 1] not in non_symbols or regex[i + 1] == "(":
+    #             res += "."
+    #     if regex[i] == ")" and regex[i + 1] == "(":
+    #         res += "."
+    #     if regex[i] == "*" and regex[i + 1] == "(":
+    #         res += "."
+    #     if regex[i] == "*" and regex[i + 1] not in non_symbols:
+    #         res += "."
+    #     if regex[i] == ")" and regex[i + 1] not in non_symbols:
+    #         res += "."
 
-    res += regex[l - 1]
-    return res
+    # res += regex[l - 1]
+    # return res
+
+    new_reg_exp = []
+    for current_char in regex:
+        if len(new_reg_exp) > 0:
+            prev_char = new_reg_exp[-1]
+            if (
+                prev_char == ")" or prev_char not in non_symbols or prev_char == "*"
+            ) and (current_char == "(" or current_char not in non_symbols):
+                new_reg_exp.append(".")
+        new_reg_exp.append(current_char)
+    return new_reg_exp
 
 
 def compute_postfix(regexp):
@@ -220,6 +230,7 @@ def compute_postfix(regexp):
 
     return res
 
+
 def chartype(char):
     if char.isdigit():
         return "digit"
@@ -229,6 +240,7 @@ def chartype(char):
         return "upcase"
     else:
         return "other"
+
 
 def regex_to_intervals(reg_exp: str):
     operators = ["|", "*", "(", ")"]
@@ -271,6 +283,7 @@ def regex_to_intervals(reg_exp: str):
 
     return inter_reg_exp
 
+
 def polish_regex(regex):
     reg = regex_to_intervals(regex)
     reg = add_concat(reg)
@@ -279,16 +292,27 @@ def polish_regex(regex):
 
 
 def out_nfa(nfa):
-    with open("test_nfa.json", 'w') as outjson:
-        outjson.write(json.dumps(nfa, indent = 4))
+    with open("test_nfa.json", "w") as outjson:
+        outjson.write(json.dumps(nfa, indent=4))
+
+
+def regex_to_nfa(reg_exp):
+    pr = polish_regex(reg_exp)
+    et = make_exp_tree(pr)
+    fa = compute_regex(et)
+
+    return arrange_nfa(fa)
+
 
 if __name__ == "__main__":
 
-    reg = "[_a-z][_0-9a-z]*"
+    # reg = "[_a-z][_0-9a-z]*"
+    reg = "for|FOR"
     pr = polish_regex(reg)
     et = make_exp_tree(pr)
     fa = compute_regex(et)
-    arrange_nfa(fa)
+    nfa = arrange_nfa(fa)
+    # nfa = regex_to_nfa(reg)
 
     print("States")
     pprint(nfa["states"])
@@ -304,6 +328,5 @@ if __name__ == "__main__":
 
     print("final states")
     pprint(nfa["final_states"])
-    
-    out_nfa(nfa)
 
+    out_nfa(nfa)

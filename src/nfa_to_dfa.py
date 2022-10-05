@@ -131,23 +131,42 @@ def disjoin_intervals(intervals):
     return disjoint_intervals
 
 
+def consumir(input, dfa):
+    """
+    Consume la cadena `buffer` con el AFD `dfa` y retorna la posición en la cadena
+    del match mas largo.
+    """
+    pos_match = 0
+
+    current_state = dfa["initial_state"]
+    for char, pos in enumerate(input):
+        current_state = dfa["transition_function"][current_state][char]
+        if current_state in dfa["final_states"]:
+            pos_match = pos + 1
+
+    return pos_match
+
+
 def consume(string: str, dfa: dict):
     current_state = dfa["start_states"][0]
-    for char in string:
+    pos_match = 0
+
+    for idx, char in enumerate(string):
         ordinal = ord(char)
         transition = False
-        for label, state in dfa["transition_function"][current_state]:
-            if ordinal >= label[0] and ordinal <= label[1]:
-                current_state = state
-                transition = True
+        if current_state in dfa["transition_function"]:
+            for label, state in dfa["transition_function"][current_state]:
+                if ordinal >= label[0] and ordinal <= label[1]:
+                    current_state = state
+                    transition = True
 
-        if transition == False:
-            return False
+            if transition == False:
+                return pos_match
 
-    if current_state in dfa["final_states"]:
-        return True
-    else:
-        return False
+            if current_state in dfa["final_states"]:
+                pos_match = idx + 1
+
+    return pos_match
 
 
 if __name__ == "__main__":
@@ -158,13 +177,14 @@ if __name__ == "__main__":
     print(consume("_hola", dfa))
     print(consume("", dfa))
     print(consume("ab012a", dfa))
-    print(consume("ab012a+", dfa))
+    print(consume("ab012a+***", dfa))
+    print(consume("for a = 1\n", dfa))
 
-#     print("Start States")
-#     pprint(dfa["start_states"])
+    # print("Start States")
+    # pprint(dfa["start_states"])
 
-#     print("Final States")
-#     pprint(dfa["final_states"])
+    # print("Final States")
+    # pprint(dfa["final_states"])
 
-#     print("Transition function")
-#     pprint(dfa["transition_function"])
+    # print("Transition function")
+    # pprint(dfa["transition_function"])
