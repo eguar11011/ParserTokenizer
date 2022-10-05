@@ -237,6 +237,10 @@ def regex_to_intervals(reg_exp: str):
     while idx < len(reg_exp):
         letter = reg_exp[idx]
         if letter == "[":
+            if reg_exp[idx:].find("]") == -1:
+                inter_reg_exp.append((ord(letter), ord(letter)))
+                idx += 1
+                continue
             inter_reg_exp.append("(")
             idx += 1
             letter = reg_exp[idx]
@@ -286,7 +290,6 @@ def out_nfa(nfa):
 
 def regex_to_nfa(reg_exp):
     pr = polish_regex(reg_exp)
-    print(pr)
     et = make_exp_tree(pr)
     fa = compute_regex(et)
 

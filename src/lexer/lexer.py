@@ -4,17 +4,20 @@ from nfa_to_dfa import set_construction, consume
 from sys import argv
 
 
-
 def main():
 
-    if len(argv) < 3:
-        raise SystemExit("Introduzca el número de argumentos adecuado.")
+    # if len(argv) < 3:
+    #     raise SystemExit("Introduzca el número de argumentos adecuado.")
 
-    tokens_file: str = argv[1]
-    program_file: str = argv[2]
+    # tokens_file: str = argv[1]
+    # program_file: str = argv[2]
 
-    # tokens_file = "../../input/tokens.txt"
-    # program_file = "../../input/program.txt"
+    tokens_file = "../../input/tokens_example.txt"
+    program_file = "../../input/program_example.txt"
+
+    # tokens_file = "../../input/json_tokens.txt"
+    # program_file = "../../input/json_example.json"
+
     dfas = []
 
     # pasa de expresion regular a AFD
@@ -42,18 +45,35 @@ def main():
                     token_name = dfa["token_name"]
 
             if token_name == "":
-                raise Exception("El input no coincide con ningun token.")
+                # si los espacios en blanco no son tokens, entonces se ignoran
+                ws_match = consume_whitespace(buffer)
+                if ws_match != 0:
+                    start_pos += ws_match
+                    buffer = buffer[ws_match:]
+                    continue
+                else:
+                    raise Exception("El input no coincide con ningun token.")
 
             final_pos = start_pos + longest_match - 1
             value = buffer[:longest_match]
 
             print(
-                f'Tipo de token: {token_name} - Posición inicial: {start_pos} - Posición final: {final_pos} - Valor: "{value}"'
+                f"Tipo de token: {token_name} - Posición inicial: {start_pos} - Posición final: {final_pos} - Valor: {value}"
             )
 
             start_pos = final_pos + 1
             buffer = buffer[longest_match:]
 
+
+def consume_whitespace(buffer):
+    """
+    Consume los caracteres en blanco del buffer
+    """
+    ws_regex = "[ \t\n][ \t\n]*"
+    nfa = regex_to_nfa(ws_regex)
+    dfa = set_construction(nfa)
+
+    return consume(buffer, dfa)
 
 
 def parse_archivo_tokens(nombre_archivo: str) -> list[Tuple[str, str]]:

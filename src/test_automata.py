@@ -24,3 +24,22 @@ def test_digit():
 
     for input, match in zip(inputs, matchs):
         assert consume(input, dfa) == match
+
+
+def test_whitespace():
+    reg_exp = "[ \t\n][ \t\n]*"
+    nfa = regex_to_nfa(reg_exp)
+    dfa = set_construction(nfa)
+
+    inputs = [
+        " ",
+        "    ",
+        """
+             """,
+        "\n ",
+        "\t\n",
+    ]
+    matchs = [1, 4, 14, 2, 2]
+
+    for input, match in zip(inputs, matchs):
+        assert consume(input, dfa) == match

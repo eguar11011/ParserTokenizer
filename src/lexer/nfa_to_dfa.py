@@ -152,4 +152,3 @@ def consume(string: str, dfa: dict):
                 pos_match = idx + 1
 
     return pos_match
-
