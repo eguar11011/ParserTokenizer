@@ -28,17 +28,11 @@ def set_e_closure(state_set: set[str], nfa: dict) -> set[str]:
 
 def move(state_set: set[str], letter: str, nfa: dict) -> tuple[set, set]:
     """
-    Calculates the state set that results from moving from a state in 
+    Calculates the state set that results from moving from a state in
     `state_set` with a given `letter`.
     """
     move_set = set()
     S = set()
-    # move_set_old = set()
-
-    # for state in state_set:
-    #     move_set_old |= {
-    #         x[1] for x in nfa["transition_function"].get(state, []) if x[0] == letter
-    #     }
 
     for state in state_set:
         for label, state in nfa["transition_function"].get(state, []):
@@ -62,7 +56,7 @@ def intersection(inter_a, inter_b) -> list[int]:
         return []
 
 
-def set_contruction(nfa: dict):
+def set_construction(nfa: dict):
     """
     Set construction of a DFA from a eps-NFA
     """
@@ -114,6 +108,9 @@ def load_nfa():
 
 
 def disjoin_intervals(intervals):
+    """
+    Returns a disjoint list of intervals from the input `input`
+    """
     intervals = list(intervals)
     heapq.heapify(intervals)
     disjoint_intervals = []
@@ -130,24 +127,9 @@ def disjoin_intervals(intervals):
         else:
             disjoint_intervals.append(old_min)
             heapq.heappush(intervals, new_min)
+
     disjoint_intervals.append(intervals.pop())
     return disjoint_intervals
-
-
-def consumir(input, dfa):
-    """
-    Consume la cadena `buffer` con el AFD `dfa` y retorna la posición en la cadena
-    del match mas largo.
-    """
-    pos_match = 0
-
-    current_state = dfa["initial_state"]
-    for char, pos in enumerate(input):
-        current_state = dfa["transition_function"][current_state][char]
-        if current_state in dfa["final_states"]:
-            pos_match = pos + 1
-
-    return pos_match
 
 
 def consume(string: str, dfa: dict):
@@ -171,25 +153,3 @@ def consume(string: str, dfa: dict):
 
     return pos_match
 
-
-if __name__ == "__main__":
-    reg = "[_a-z][_0-9a-z]*"
-    nfa = regex_to_nfa 
-
-    dfa = set_contruction(nfa)
-
-    print(consume("carro", dfa))
-    print(consume("_hola", dfa))
-    print(consume("", dfa))
-    print(consume("ab012a", dfa))
-    print(consume("ab012a+***", dfa))
-    print(consume("for a = 1\n", dfa))
-
-    # print("Start States")
-    # pprint(dfa["start_states"])
-
-    # print("Final States")
-    # pprint(dfa["final_states"])
-
-    # print("Transition function")
-    # pprint(dfa["transition_function"])

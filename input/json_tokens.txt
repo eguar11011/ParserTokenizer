@@ -1,0 +1,10 @@
+LEFT_BRACE -> {
+RIGHT_BRACE -> }
+LEFT_SQUARE_BRACE -> [
+RIGHT_SQUARE_BRACE -> ]
+COMMA -> ,
+COLON -> :
+STRING -> "[ _0-9a-zA-Z]*"
+BOOLEAN -> true|false
+NUMBER -> 0|[1-9][0-9]*
+NULL -> null

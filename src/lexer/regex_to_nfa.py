@@ -4,13 +4,6 @@ from pprint import pprint
 from string import ascii_lowercase, ascii_uppercase
 import json
 
-non_symbols = ["|", "*", ".", "(", ")"]
-
-# nfa = {}
-# dfa = {}
-nfa_states = []
-dfa_states = []
-
 
 class charType:
     SYMBOL = 1
@@ -33,6 +26,9 @@ class ExpressionTree:
 
 
 def make_exp_tree(regexp):
+    """
+    Computes AST from regular expression.
+    """
     stack = []
     for c in regexp:
         if c == "|":
@@ -57,11 +53,17 @@ def make_exp_tree(regexp):
 
 
 def compPrecedence(a, b):
+    """
+    Computes the operator precedence of 2 operator and returns the highest.
+    """
     p = ["|", ".", "*"]
     return p.index(a) > p.index(b)
 
 
 def compute_regex(exp_t):
+    """
+    Computes the epsilon-NFA from a regular expression AST.
+    """
     # returns E-NFA
     if exp_t.charType == charType.CONCAT:
         return do_concat(exp_t)
@@ -141,10 +143,6 @@ def arrange_transitions(state, states_done, symbol_table, nfa):
             arrange_transitions(ns, states_done, symbol_table, nfa)
 
 
-def notation_to_num(str):
-    return int(str[1:])
-
-
 def final_st_dfs(nfa):
     for st in nfa["states"]:
         count = 0
@@ -171,26 +169,8 @@ def arrange_nfa(fa):
 
 def add_concat(regex):
     non_symbols = ["|", "*", ".", "(", ")"]
-    # l = len(regex)
-    # res = []
-    # for i in range(l - 1):
-    #     res.append(regex[i])
-    #     if regex[i] not in non_symbols:
-    #         if regex[i + 1] not in non_symbols or regex[i + 1] == "(":
-    #             res += "."
-    #     if regex[i] == ")" and regex[i + 1] == "(":
-    #         res += "."
-    #     if regex[i] == "*" and regex[i + 1] == "(":
-    #         res += "."
-    #     if regex[i] == "*" and regex[i + 1] not in non_symbols:
-    #         res += "."
-    #     if regex[i] == ")" and regex[i + 1] not in non_symbols:
-    #         res += "."
-
-    # res += regex[l - 1]
-    # return res
-
     new_reg_exp = []
+
     for current_char in regex:
         if len(new_reg_exp) > 0:
             prev_char = new_reg_exp[-1]
@@ -208,7 +188,7 @@ def compute_postfix(regexp):
     """
     stk = []
     res = []
-
+    non_symbols = ["|", "*", ".", "(", ")"]
     for c in regexp:
         if c not in non_symbols or c == "*":
             res.append(c)
@@ -232,6 +212,10 @@ def compute_postfix(regexp):
 
 
 def chartype(char):
+    """
+    Return the class of a character between "digit", "lowercas ascii",
+    "uppercase_ascii" and "other".
+    """
     if char.isdigit():
         return "digit"
     elif char in ascii_lowercase:
@@ -243,6 +227,10 @@ def chartype(char):
 
 
 def regex_to_intervals(reg_exp: str):
+    """
+    Replaces the letters(and character classes) for a regular expression
+    string with ordinal intervals.
+    """
     operators = ["|", "*", "(", ")"]
     inter_reg_exp = []
     idx = 0
@@ -307,12 +295,7 @@ def regex_to_nfa(reg_exp):
 if __name__ == "__main__":
 
     reg = "[_a-z][_0-9a-z]*"
-    # reg = "for|FOR"
-    pr = polish_regex(reg)
-    et = make_exp_tree(pr)
-    fa = compute_regex(et)
-    nfa = arrange_nfa(fa)
-    # nfa = regex_to_nfa(reg)
+    nfa = regex_to_nfa(reg)
 
     print("States")
     pprint(nfa["states"])

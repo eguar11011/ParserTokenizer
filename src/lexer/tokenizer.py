@@ -1,9 +1,7 @@
 from typing import Tuple
 from regex_to_nfa import regex_to_nfa
-from nfa_to_dfa import set_contruction, consume
-
-
-# from sys import argv
+from nfa_to_dfa import set_construction, consume
+from sys import argv
 
 # if len(argv) < 3:
 #     raise SystemExit("Introduzca el número de argumentos adecuado.")
@@ -11,42 +9,50 @@ from nfa_to_dfa import set_contruction, consume
 # tokens_txt: str = argv[1]
 # program_txt: str = argv[2]
 
-archivo_tokens = "../input/tokens.txt"
-archivo_programa = "../input/program.txt"
+tokens_file = "../../input/tokens.txt"
+program_file = "../../input/program.txt"
 dfas = []
 
 
 def main():
 
     # pasa de expresion regular a AFD
-    for token_name, regex_token in parse_archivo_tokens(archivo_tokens):
+    for token_name, regex_token in parse_archivo_tokens(tokens_file):
         nfa = regex_to_nfa(regex_token)
-        dfa = set_contruction(nfa)
+        dfa = set_construction(nfa)
         dfa["token_name"] = token_name
         dfas.append(dfa)
 
     # tokenización
-    with open(archivo_programa, mode="r") as texto:
-        buffer = texto.read().strip()
-        print(buffer, end="\n")
+    with open(program_file, mode="r") as texto:
 
+        buffer = texto.read().strip()
         start_pos = 1
+
         while buffer:
             token_name, longest_match = "", 0
+
+            # prueba hacer match con todos los tokens
             for dfa in dfas:
                 possible_longest_match = consume(buffer, dfa)
 
                 if possible_longest_match > longest_match:
                     longest_match = possible_longest_match
                     token_name = dfa["token_name"]
+
+            if token_name == "":
+                raise Exception("El input no coincide con ningun token.")
+
             final_pos = start_pos + longest_match - 1
             value = buffer[:longest_match]
+
             print(
                 f'Tipo de token: {token_name} - Posición inicial: {start_pos} - Posición final: {final_pos} - Valor: "{value}"'
             )
 
             start_pos = final_pos + 1
             buffer = buffer[longest_match:]
+
 
 
 def parse_archivo_tokens(nombre_archivo: str) -> list[Tuple[str, str]]:
