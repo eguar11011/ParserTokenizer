@@ -1,9 +1,10 @@
 # Conversion from Regex to NFA
 
 from pprint import pprint
+from string import ascii_lowercase, ascii_uppercase
 import json 
 
-non_symbols = ["+", "*", ".", "(", ")"]
+non_symbols = ["|", "*", ".", "(", ")"]
 
 nfa = {}
 dfa = {}
@@ -34,7 +35,7 @@ class ExpressionTree:
 def make_exp_tree(regexp):
     stack = []
     for c in regexp:
-        if c == "+":
+        if c == "|":
             z = ExpressionTree(charType.UNION)
             z.right = stack.pop()
             z.left = stack.pop()
@@ -56,7 +57,7 @@ def make_exp_tree(regexp):
 
 
 def compPrecedence(a, b):
-    p = ["+", ".", "*"]
+    p = ["|", ".", "*"]
     return p.index(a) > p.index(b)
 
 
@@ -192,15 +193,18 @@ def add_concat(regex):
 
 
 def compute_postfix(regexp):
+    """
+    Computes the postfix form of a regular expression
+    """
     stk = []
-    res = ""
+    res = []
 
     for c in regexp:
         if c not in non_symbols or c == "*":
-            res += c
+            res.append(c)
         elif c == ")":
             while len(stk) > 0 and stk[-1] != "(":
-                res += stk.pop()
+                res.append(stk.pop())
             stk.pop()
         elif c == "(":
             stk.append(c)
@@ -208,19 +212,70 @@ def compute_postfix(regexp):
             stk.append(c)
         else:
             while len(stk) > 0 and stk[-1] != "(" and not compPrecedence(c, stk[-1]):
-                res += stk.pop()
+                res.append(stk.pop())
             stk.append(c)
 
     while len(stk) > 0:
-        res += stk.pop()
+        res.append(stk.pop())
 
     return res
 
+def chartype(char):
+    if char.isdigit():
+        return "digit"
+    elif char in ascii_lowercase:
+        return "locase"
+    elif char in ascii_uppercase:
+        return "upcase"
+    else:
+        return "other"
+
+def regex_to_intervals(reg_exp: str):
+    operators = ["|", "*", "(", ")"]
+    inter_reg_exp = []
+    idx = 0
+    while idx < len(reg_exp):
+        letter = reg_exp[idx]
+        if letter == "[":
+            inter_reg_exp.append("(")
+            idx += 1
+            letter = reg_exp[idx]
+
+            while letter != "]":
+                if idx + 1 < len(reg_exp) and reg_exp[idx + 1] == "-":
+                    prev = reg_exp[idx]
+                    next = reg_exp[idx + 2]
+                    if chartype(prev) != "other" and chartype(prev) == chartype(next):
+                        inter_reg_exp.append((ord(prev), ord(next)))
+                        idx += 2
+                    else:
+                        inter_reg_exp.append((ord(letter), ord(letter)))
+                else:
+                    inter_reg_exp.append((ord(letter), ord(letter)))
+
+                idx += 1
+                if idx > len(reg_exp):
+                    raise Exception("Invalid regular expression")
+
+                letter = reg_exp[idx]
+                if letter != "]":
+                    inter_reg_exp.append("|")
+
+            inter_reg_exp.append(")")
+
+        elif letter not in operators:
+            inter_reg_exp.append((ord(letter), ord(letter)))
+        else:
+            inter_reg_exp.append(letter)
+        idx += 1
+
+    return inter_reg_exp
 
 def polish_regex(regex):
-    reg = add_concat(regex)
-    regg = compute_postfix(reg)
-    return regg
+    reg = regex_to_intervals(regex)
+    reg = add_concat(reg)
+    reg = compute_postfix(reg)
+    return reg
 
 
 def out_nfa(nfa):
@@ -229,7 +284,9 @@ def out_nfa(nfa):
 
 if __name__ == "__main__":
 
-    reg = "(a+b)*abb"
+    # reg = "(a|b)*abb"
+    reg = "[_a-z][_0-9a-z]*"
+
     pr = polish_regex(reg)
     et = make_exp_tree(pr)
     fa = compute_regex(et)
