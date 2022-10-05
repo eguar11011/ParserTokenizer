@@ -4,7 +4,7 @@ from copy import deepcopy
 import heapq
 
 
-def set_e_closure(state_set: set[str], nfa):
+def set_e_closure(state_set: set[str], nfa: dict) -> set[str]:
     """
     Calculates the epsilon-closure of a set of states of a NFA.
     """
@@ -28,8 +28,8 @@ def set_e_closure(state_set: set[str], nfa):
 
 def move(state_set: set[str], letter: str, nfa: dict):
     """
-    Calculates the state set that results from moving from a state in `state_set`
-    with a given `letter`
+    Calculates the state set that results from moving from a state in 
+    `state_set` with a given `letter`.
     """
     move_set = set()
     move_set_old = set()
@@ -173,6 +173,7 @@ if __name__ == "__main__":
     nfa = load_nfa()
 
     dfa = set_contruction(nfa)
+
     print(consume("carro", dfa))
     print(consume("_hola", dfa))
     print(consume("", dfa))

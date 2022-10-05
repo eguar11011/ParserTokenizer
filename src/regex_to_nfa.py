@@ -306,8 +306,8 @@ def regex_to_nfa(reg_exp):
 
 if __name__ == "__main__":
 
-    # reg = "[_a-z][_0-9a-z]*"
-    reg = "for|FOR"
+    reg = "[_a-z][_0-9a-z]*"
+    # reg = "for|FOR"
     pr = polish_regex(reg)
     et = make_exp_tree(pr)
     fa = compute_regex(et)
