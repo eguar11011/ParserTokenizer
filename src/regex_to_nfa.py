@@ -284,9 +284,7 @@ def out_nfa(nfa):
 
 if __name__ == "__main__":
 
-    # reg = "(a|b)*abb"
     reg = "[_a-z][_0-9a-z]*"
-
     pr = polish_regex(reg)
     et = make_exp_tree(pr)
     fa = compute_regex(et)
