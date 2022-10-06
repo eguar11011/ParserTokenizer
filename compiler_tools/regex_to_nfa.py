@@ -3,6 +3,7 @@
 from string import ascii_lowercase, ascii_uppercase
 import json
 
+
 class charType:
     SYMBOL = 1
     CONCAT = 2
@@ -292,4 +293,3 @@ def regex_to_nfa(reg_exp):
     fa = compute_regex(et)
 
     return arrange_nfa(fa)
-

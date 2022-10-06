@@ -16,6 +16,7 @@ def get_dfas(tokens_file):
 
     return dfas
 
+
 def lexical_analysis(tokens_file, program_file):
     """
     Perfoms a lexical analysis of the file with `pogram_file` path, with respect
