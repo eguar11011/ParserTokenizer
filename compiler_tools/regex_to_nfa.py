@@ -1,7 +1,6 @@
 # Conversion from Regex to NFA
 
 from string import ascii_lowercase, ascii_uppercase
-import json
 
 
 class charType:
@@ -20,11 +19,80 @@ class ExpressionTree:
     def __init__(self, charType, value=None):
         self.charType = charType
         self.value = value
-        self.left = None
-        self.right = None
+        self.left: NFAState | None = None
+        self.right: NFAState | None = None
 
 
-def make_exp_tree(regexp):
+def compute_regex(exp_t) -> tuple[NFAState, NFAState]:
+    """
+    Computes the epsilon-NFA from a regular expression AST.
+    """
+    # returns E-NFA
+    if exp_t.charType == charType.CONCAT:
+        return do_concat(exp_t)
+    elif exp_t.charType == charType.UNION:
+        return do_union(exp_t)
+    elif exp_t.charType == charType.KLEENE:
+        return do_kleene_star(exp_t)
+    else:
+        return eval_symbol(exp_t)
+
+
+def eval_symbol(exp_t: ExpressionTree) -> tuple[NFAState, NFAState]:
+    """
+    Creates two states with a transition with label `expt.value`.
+    """
+    start = NFAState()
+    end = NFAState()
+
+    start.next_state[exp_t.value] = [end]
+    return start, end
+
+
+def do_concat(exp_t) -> tuple[NFAState, NFAState]:
+    """
+    Transforms a concatenation AST into its correspondent NFA.
+    """
+    start = compute_regex(exp_t.left)
+    end = compute_regex(exp_t.right)
+
+    start[1].next_state["$"] = [end[0]]
+    return start[0], end[1]
+
+
+def do_union(exp_t) -> tuple[NFAState, NFAState]:
+    """
+    Transforms a union AST into its correspondent NFA.
+    """
+    start = NFAState()
+    end = NFAState()
+
+    first_nfa = compute_regex(exp_t.left)
+    second_nfa = compute_regex(exp_t.right)
+
+    start.next_state["$"] = [first_nfa[0], second_nfa[0]]
+    first_nfa[1].next_state["$"] = [end]
+    second_nfa[1].next_state["$"] = [end]
+
+    return start, end
+
+
+def do_kleene_star(exp_t) -> tuple[NFAState, NFAState]:
+    """
+    Transforms a Kleene star AST into its correspondent NFA.
+    """
+    start = NFAState()
+    end = NFAState()
+
+    starred_nfa = compute_regex(exp_t.left)
+
+    start.next_state["$"] = [starred_nfa[0], end]
+    starred_nfa[1].next_state["$"] = [starred_nfa[0], end]
+
+    return start, end
+
+
+def make_exp_tree(regexp) -> ExpressionTree:
     """
     Computes AST from regular expression.
     """
@@ -51,69 +119,12 @@ def make_exp_tree(regexp):
     return stack[0]
 
 
-def compPrecedence(a, b):
+def compPrecedence(a, b) -> int:
     """
     Computes the operator precedence of 2 operator and returns the highest.
     """
     p = ["|", ".", "*"]
     return p.index(a) > p.index(b)
-
-
-def compute_regex(exp_t):
-    """
-    Computes the epsilon-NFA from a regular expression AST.
-    """
-    # returns E-NFA
-    if exp_t.charType == charType.CONCAT:
-        return do_concat(exp_t)
-    elif exp_t.charType == charType.UNION:
-        return do_union(exp_t)
-    elif exp_t.charType == charType.KLEENE:
-        return do_kleene_star(exp_t)
-    else:
-        return eval_symbol(exp_t)
-
-
-def eval_symbol(exp_t):
-    start = NFAState()
-    end = NFAState()
-
-    start.next_state[exp_t.value] = [end]
-    return start, end
-
-
-def do_concat(exp_t):
-    left_nfa = compute_regex(exp_t.left)
-    right_nfa = compute_regex(exp_t.right)
-
-    left_nfa[1].next_state["$"] = [right_nfa[0]]
-    return left_nfa[0], right_nfa[1]
-
-
-def do_union(exp_t):
-    start = NFAState()
-    end = NFAState()
-
-    first_nfa = compute_regex(exp_t.left)
-    second_nfa = compute_regex(exp_t.right)
-
-    start.next_state["$"] = [first_nfa[0], second_nfa[0]]
-    first_nfa[1].next_state["$"] = [end]
-    second_nfa[1].next_state["$"] = [end]
-
-    return start, end
-
-
-def do_kleene_star(exp_t):
-    start = NFAState()
-    end = NFAState()
-
-    starred_nfa = compute_regex(exp_t.left)
-
-    start.next_state["$"] = [starred_nfa[0], end]
-    starred_nfa[1].next_state["$"] = [starred_nfa[0], end]
-
-    return start, end
 
 
 def arrange_transitions(state, states_done, symbol_table, nfa):
@@ -166,7 +177,7 @@ def arrange_nfa(fa):
     return nfa
 
 
-def add_concat(regex):
+def add_concat(regex: str) -> list[str]:
     non_symbols = ["|", "*", ".", "(", ")"]
     new_reg_exp = []
 
@@ -181,7 +192,7 @@ def add_concat(regex):
     return new_reg_exp
 
 
-def compute_postfix(regexp):
+def compute_postfix(regexp: list[str]) -> list[str]:
     """
     Computes the postfix form of a regular expression
     """
@@ -210,7 +221,7 @@ def compute_postfix(regexp):
     return res
 
 
-def chartype(char):
+def chartype(char: str) -> str:
     """
     Return the class of a character between "digit", "lowercas ascii",
     "uppercase_ascii" and "other".
@@ -225,7 +236,7 @@ def chartype(char):
         return "other"
 
 
-def regex_to_intervals(reg_exp: str):
+def regex_to_intervals(reg_exp: str) -> list[str]:
     """
     Replaces the letters(and character classes) for a regular expression
     string with ordinal intervals.
@@ -276,15 +287,15 @@ def regex_to_intervals(reg_exp: str):
 
 
 def polish_regex(regex):
+    """
+    Parse characters to intervals, adds the concatenation symbol
+    and converts to postfix notation.
+    """
     reg = regex_to_intervals(regex)
     reg = add_concat(reg)
     reg = compute_postfix(reg)
+
     return reg
-
-
-def out_nfa(nfa):
-    with open("test_nfa.json", "w") as outjson:
-        outjson.write(json.dumps(nfa, indent=4))
 
 
 def regex_to_nfa(reg_exp):
