@@ -1,9 +1,7 @@
 # Conversion from Regex to NFA
 
-from pprint import pprint
 from string import ascii_lowercase, ascii_uppercase
 import json
-
 
 class charType:
     SYMBOL = 1
@@ -295,25 +293,3 @@ def regex_to_nfa(reg_exp):
 
     return arrange_nfa(fa)
 
-
-if __name__ == "__main__":
-
-    reg = "[_a-z][_0-9a-z]*"
-    nfa = regex_to_nfa(reg)
-
-    print("States")
-    pprint(nfa["states"])
-
-    print("Alphabet")
-    pprint(nfa["letters"])
-
-    print("Transition function")
-    pprint(nfa["transition_function"])
-
-    print("start states")
-    pprint(nfa["start_states"])
-
-    print("final states")
-    pprint(nfa["final_states"])
-
-    out_nfa(nfa)

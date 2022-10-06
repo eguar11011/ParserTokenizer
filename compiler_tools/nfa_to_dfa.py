@@ -1,8 +1,7 @@
-import json
+# Conversion from eps-NFA to DFA
+
 import heapq
 from copy import deepcopy
-from compiler_tools.regex_to_nfa import regex_to_nfa
-from compiler_tools.visual_utils import draw_dfa
 
 
 def set_e_closure(state_set: set[str], nfa: dict) -> set[str]:
@@ -103,12 +102,6 @@ def state_set_to_string(state_set: set[str]):
     return ",".join(sorted(list(state_set), key=lambda x: int(x[1:])))
 
 
-def load_nfa():
-    with open("test_nfa.json", "r") as inpjson:
-        nfa = json.loads(inpjson.read())
-    return nfa
-
-
 def disjoin_intervals(intervals):
     """
     Returns a disjoint list of intervals from the input `input`
@@ -155,14 +148,3 @@ def consume(string: str, dfa: dict):
 
     return pos_match
 
-
-if __name__ == "__main__":
-    from pprint import pprint
-
-    regex = "a|b"
-    nfa = regex_to_nfa(regex)
-    dfa = set_construction(nfa)
-    # pprint(dfa)
-    # pprint(dfa["transition_function"].items())
-    # pprint(dfa["transition_function"])
-    draw_dfa(dfa)
