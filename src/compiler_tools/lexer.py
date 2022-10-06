@@ -87,9 +87,3 @@ def parse_archivo_tokens(nombre_archivo: str) -> list[Tuple[str, str]]:
                 tokens.append((nombre_token, regex_token))
 
     return tokens
-
-
-if __name__ == "__main__":
-    tokens_file = "../../input/tokens_example.txt"
-    program_file = "../../input/program_example.txt"
-    print(lexical_analysis(tokens_file, program_file))
