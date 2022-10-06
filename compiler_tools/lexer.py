@@ -23,16 +23,9 @@ def lexical_analysis(tokens_file, program_file):
     with relevant token related information.
     """
     token_info = []
+
     # pasa de expresiones regulares a AFDs
     dfas = get_dfas(tokens_file)
-
-
-    # for token_name, regex_token in parse_archivo_tokens(tokens_file):
-    #     nfa = regex_to_nfa(regex_token)
-    #     dfa = set_construction(nfa)
-    #     dfa["token_name"] = token_name
-    #     draw_dfa(dfa, title=token_name)
-    #     dfas.append(dfa)
 
     # tokenización
     with open(program_file, mode="r") as texto:
