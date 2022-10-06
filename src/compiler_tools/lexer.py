@@ -1,23 +1,10 @@
 from typing import Tuple
-from regex_to_nfa import regex_to_nfa
-from nfa_to_dfa import set_construction, consume
-from sys import argv
+from compiler_tools.regex_to_nfa import regex_to_nfa
+from compiler_tools.nfa_to_dfa import set_construction, consume
 
 
-def main():
-
-    # if len(argv) < 3:
-    #     raise SystemExit("Introduzca el número de argumentos adecuado.")
-
-    # tokens_file: str = argv[1]
-    # program_file: str = argv[2]
-
-    tokens_file = "../../input/tokens_example.txt"
-    program_file = "../../input/program_example.txt"
-
-    # tokens_file = "../../input/json_tokens.txt"
-    # program_file = "../../input/json_example.json"
-
+def lexical_analysis(tokens_file, program_file):
+    token_info = []
     dfas = []
 
     # pasa de expresion regular a AFD
@@ -57,12 +44,14 @@ def main():
             final_pos = start_pos + longest_match - 1
             value = buffer[:longest_match]
 
-            print(
+            token_info.append(
                 f"Tipo de token: {token_name} - Posición inicial: {start_pos} - Posición final: {final_pos} - Valor: {value}"
             )
 
             start_pos = final_pos + 1
             buffer = buffer[longest_match:]
+
+    return token_info
 
 
 def consume_whitespace(buffer):
@@ -96,4 +85,6 @@ def parse_archivo_tokens(nombre_archivo: str) -> list[Tuple[str, str]]:
 
 
 if __name__ == "__main__":
-    main()
+    tokens_file = "../../input/tokens_example.txt"
+    program_file = "../../input/program_example.txt"
+    print(lexical_analysis(tokens_file, program_file))
