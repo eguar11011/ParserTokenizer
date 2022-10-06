@@ -1,7 +1,20 @@
 from typing import Tuple
 from compiler_tools.regex_to_nfa import regex_to_nfa
 from compiler_tools.nfa_to_dfa import set_construction, consume
+from compiler_tools.visual_utils import draw_dfa
 
+
+def get_dfas(tokens_file):
+    dfas = []
+
+    for token_name, regex_token in parse_archivo_tokens(tokens_file):
+        nfa = regex_to_nfa(regex_token)
+        dfa = set_construction(nfa)
+
+        dfa["token_name"] = token_name
+        dfas.append(dfa)
+
+    return dfas
 
 def lexical_analysis(tokens_file, program_file):
     """
@@ -10,14 +23,16 @@ def lexical_analysis(tokens_file, program_file):
     with relevant token related information.
     """
     token_info = []
-    dfas = []
+    # pasa de expresiones regulares a AFDs
+    dfas = get_dfas(tokens_file)
 
-    # pasa de expresion regular a AFD
-    for token_name, regex_token in parse_archivo_tokens(tokens_file):
-        nfa = regex_to_nfa(regex_token)
-        dfa = set_construction(nfa)
-        dfa["token_name"] = token_name
-        dfas.append(dfa)
+
+    # for token_name, regex_token in parse_archivo_tokens(tokens_file):
+    #     nfa = regex_to_nfa(regex_token)
+    #     dfa = set_construction(nfa)
+    #     dfa["token_name"] = token_name
+    #     draw_dfa(dfa, title=token_name)
+    #     dfas.append(dfa)
 
     # tokenización
     with open(program_file, mode="r") as texto:

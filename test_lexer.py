@@ -56,7 +56,7 @@ def test_lexer():
         "Tipo de token: space - Posición inicial: 8 - Posición final: 8 - Valor:  ",
         "Tipo de token: digit - Posición inicial: 9 - Posición final: 9 - Valor: 1",
     ]
-    tokens_file = "../input/tokens_example.txt"
-    program_file = "../input/program_example.txt"
+    tokens_file = "input/tokens_example.txt"
+    program_file = "input/program_example.txt"
 
     assert lexical_analysis(tokens_file, program_file) == token_info

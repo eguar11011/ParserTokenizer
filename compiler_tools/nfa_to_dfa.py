@@ -1,7 +1,8 @@
 import json
-from pprint import pprint
-from copy import deepcopy
 import heapq
+from copy import deepcopy
+from compiler_tools.regex_to_nfa import regex_to_nfa
+from compiler_tools.visual_utils import draw_dfa
 
 
 def set_e_closure(state_set: set[str], nfa: dict) -> set[str]:
@@ -93,6 +94,7 @@ def set_construction(nfa: dict):
 
     dfa["start_states"] = [state_set_to_string(state) for state in dfa["start_states"]]
     dfa["final_states"] = [state_set_to_string(state) for state in dfa["final_states"]]
+    dfa["states"] = [state_set_to_string(state) for state in dfa["states"]]
 
     return dfa
 
@@ -152,3 +154,15 @@ def consume(string: str, dfa: dict):
                 pos_match = idx + 1
 
     return pos_match
+
+
+if __name__ == "__main__":
+    from pprint import pprint
+
+    regex = "a|b"
+    nfa = regex_to_nfa(regex)
+    dfa = set_construction(nfa)
+    # pprint(dfa)
+    # pprint(dfa["transition_function"].items())
+    # pprint(dfa["transition_function"])
+    draw_dfa(dfa)
