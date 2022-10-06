@@ -4,6 +4,11 @@ from compiler_tools.nfa_to_dfa import set_construction, consume
 
 
 def lexical_analysis(tokens_file, program_file):
+    """
+    Perfoms a lexical analysis of the file with `pogram_file` path, with respect
+    to the tokens defined in the file with path`tokens_file`. Returns a list
+    with relevant token related information.
+    """
     token_info = []
     dfas = []
 
