@@ -12,7 +12,7 @@ class charType:
 
 class NFAState:
     def __init__(self):
-        self.next_state = {}
+        self.transitions = {}
 
 
 class ExpressionTree:
@@ -23,11 +23,10 @@ class ExpressionTree:
         self.right: NFAState | None = None
 
 
-def compute_regex(exp_t) -> tuple[NFAState, NFAState]:
+def build_automata(exp_t: ExpressionTree) -> tuple[NFAState, NFAState]:
     """
     Computes the epsilon-NFA from a regular expression AST.
     """
-    # returns E-NFA
     if exp_t.charType == charType.CONCAT:
         return do_concat(exp_t)
     elif exp_t.charType == charType.UNION:
@@ -44,8 +43,8 @@ def eval_symbol(exp_t: ExpressionTree) -> tuple[NFAState, NFAState]:
     """
     start = NFAState()
     end = NFAState()
+    start.transitions[exp_t.value] = [end]
 
-    start.next_state[exp_t.value] = [end]
     return start, end
 
 
@@ -53,10 +52,10 @@ def do_concat(exp_t) -> tuple[NFAState, NFAState]:
     """
     Transforms a concatenation AST into its correspondent NFA.
     """
-    start = compute_regex(exp_t.left)
-    end = compute_regex(exp_t.right)
+    start = build_automata(exp_t.left)
+    end = build_automata(exp_t.right)
+    start[1].transitions["$"] = [end[0]]
 
-    start[1].next_state["$"] = [end[0]]
     return start[0], end[1]
 
 
@@ -67,12 +66,12 @@ def do_union(exp_t) -> tuple[NFAState, NFAState]:
     start = NFAState()
     end = NFAState()
 
-    first_nfa = compute_regex(exp_t.left)
-    second_nfa = compute_regex(exp_t.right)
+    first_nfa = build_automata(exp_t.left)
+    second_nfa = build_automata(exp_t.right)
 
-    start.next_state["$"] = [first_nfa[0], second_nfa[0]]
-    first_nfa[1].next_state["$"] = [end]
-    second_nfa[1].next_state["$"] = [end]
+    start.transitions["$"] = [first_nfa[0], second_nfa[0]]
+    first_nfa[1].transitions["$"] = [end]
+    second_nfa[1].transitions["$"] = [end]
 
     return start, end
 
@@ -84,10 +83,10 @@ def do_kleene_star(exp_t) -> tuple[NFAState, NFAState]:
     start = NFAState()
     end = NFAState()
 
-    starred_nfa = compute_regex(exp_t.left)
+    starred_nfa = build_automata(exp_t.left)
 
-    start.next_state["$"] = [starred_nfa[0], end]
-    starred_nfa[1].next_state["$"] = [starred_nfa[0], end]
+    start.transitions["$"] = [starred_nfa[0], end]
+    starred_nfa[1].transitions["$"] = [starred_nfa[0], end]
 
     return start, end
 
@@ -116,50 +115,18 @@ def make_exp_tree(regexp) -> ExpressionTree:
             continue
         else:
             stack.append(ExpressionTree(charType.SYMBOL, c))
+
     return stack[0]
 
 
 def compPrecedence(a, b) -> int:
     """
-    Computes the operator precedence of 2 operator and returns the highest.
+    Computes the operator precedence of 2 operator and returns `True` if
+    the first one is higher than the second one, else returns `False`.
     """
     p = ["|", ".", "*"]
+
     return p.index(a) > p.index(b)
-
-
-def arrange_transitions(state, states_done, symbol_table, nfa):
-
-    if state in states_done:
-        return
-
-    states_done.append(state)
-
-    for symbol in list(state.next_state):
-        if symbol not in nfa["letters"]:
-            nfa["letters"].append(symbol)
-        for ns in state.next_state[symbol]:
-            if ns not in symbol_table:
-                symbol_table[ns] = sorted(symbol_table.values())[-1] + 1
-                q_state = "Q" + str(symbol_table[ns])
-                nfa["states"].append(q_state)
-
-            nfa["transition_function"]["Q" + str(symbol_table[state])] = nfa[
-                "transition_function"
-            ].get("Q" + str(symbol_table[state]), []) + [
-                (symbol, "Q" + str(symbol_table[ns]))
-            ]
-
-        for ns in state.next_state[symbol]:
-            arrange_transitions(ns, states_done, symbol_table, nfa)
-
-
-def final_st_dfs(nfa):
-    for st in nfa["states"]:
-        count = 0
-        count = len([x for x in nfa["transition_function"].get(st, []) if x != st])
-
-        if count == 0 and st not in nfa["final_states"]:
-            nfa["final_states"].append(st)
 
 
 def arrange_nfa(fa):
@@ -174,10 +141,56 @@ def arrange_nfa(fa):
 
     nfa["start_states"].append("Q1")
     final_st_dfs(nfa)
+
     return nfa
 
 
-def add_concat(regex: str) -> list[str]:
+def arrange_transitions(state, states_done, symbol_table, nfa):
+    """
+    Explores the NFA graph and calculates the NFAs transition function adjancecy list,
+    letters, and states.
+    """
+
+    if state in states_done:
+        return
+
+    states_done.append(state)
+
+    for symbol in list(state.transitions):
+
+        if symbol not in nfa["letters"]:
+            nfa["letters"].append(symbol)
+
+        for ns in state.transitions[symbol]:
+
+            if ns not in symbol_table:
+                symbol_table[ns] = sorted(symbol_table.values())[-1] + 1
+                q_state = "Q" + str(symbol_table[ns])
+                nfa["states"].append(q_state)
+
+            nfa["transition_function"]["Q" + str(symbol_table[state])] = nfa[
+                "transition_function"
+            ].get("Q" + str(symbol_table[state]), []) + [
+                (symbol, "Q" + str(symbol_table[ns]))
+            ]
+
+        for ns in state.transitions[symbol]:
+            arrange_transitions(ns, states_done, symbol_table, nfa)
+
+
+def final_st_dfs(nfa):
+    for st in nfa["states"]:
+        count = 0
+        count = len([x for x in nfa["transition_function"].get(st, []) if x != st])
+
+        if count == 0 and st not in nfa["final_states"]:
+            nfa["final_states"].append(st)
+
+
+def add_concat_operator(regex: list[str]) -> list[str]:
+    """
+    Adds the concatenation operator "." to the regular expression `regex`.
+    """
     non_symbols = ["|", "*", ".", "(", ")"]
     new_reg_exp = []
 
@@ -189,6 +202,7 @@ def add_concat(regex: str) -> list[str]:
             ) and (current_char == "(" or current_char not in non_symbols):
                 new_reg_exp.append(".")
         new_reg_exp.append(current_char)
+
     return new_reg_exp
 
 
@@ -223,7 +237,7 @@ def compute_postfix(regexp: list[str]) -> list[str]:
 
 def chartype(char: str) -> str:
     """
-    Return the class of a character between "digit", "lowercas ascii",
+    Return the class of a character between "digit", "lowercase ascii",
     "uppercase_ascii" and "other".
     """
     if char.isdigit():
@@ -292,7 +306,7 @@ def polish_regex(regex):
     and converts to postfix notation.
     """
     reg = regex_to_intervals(regex)
-    reg = add_concat(reg)
+    reg = add_concat_operator(reg)
     reg = compute_postfix(reg)
 
     return reg
@@ -301,6 +315,6 @@ def polish_regex(regex):
 def regex_to_nfa(reg_exp):
     pr = polish_regex(reg_exp)
     et = make_exp_tree(pr)
-    fa = compute_regex(et)
+    fa = build_automata(et)
 
     return arrange_nfa(fa)
