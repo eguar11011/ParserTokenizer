@@ -1,2 +1,2 @@
-# compilers-22
+# compilers-2
 - Parsing exercises
