@@ -1,12 +1,16 @@
 import ast
 from pprint import pprint
+from string import ascii_letters
+import math
 
 def main():
-    with open("ast_example.py", "r") as source:
-        tree = ast.parse(source.read())
 
-    analyzer = Analyzer()
-    analyzer.visit(tree)
+    #transforma el archivo en un AST
+    with open("ast_example.py", "r") as source:
+        tree = ast.parse(source.read()) 
+
+    analyzer = Analyzer() #extraer información del árbol
+    analyzer.visit(tree) 
     analyzer.report()
 
 
